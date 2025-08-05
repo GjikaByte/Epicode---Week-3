@@ -63,9 +63,9 @@ console.log("Scrivi una funzione per ricavare solamente i valori PARI da un arra
 
 arrayNumeri = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-const evenNumbers = arrayNumeri.filter(num => num % 2 === 0);
+const evenNumbers = arrayNumeri =>  arrayNumeri.filter(num => num % 2 === 0);
 
-console.log(evenNumbers); // Output: [2, 4, 6, 8, 10]
+console.log(evenNumbers(arrayNumeri)); // Output: [2, 4, 6, 8, 10]
 
 console.log("----------------------------------------------------");
 
@@ -77,7 +77,8 @@ console.log("Scrivi una funzione per sommare i numeri contenuti in un array");
 
 arrayNumeri = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 let arraySumFor = 0;
-arrayNumeri.forEach(num => arraySumFor += num);
+const arraySumForEach = () => arrayNumeri.forEach(num => arraySumFor += num);
+arraySumForEach();
 console.log(arraySumFor); // Output: 55
 
 console.log("-----------------------------------------------------");
@@ -88,8 +89,8 @@ console.log("-----------------------------------------------------");
 
 console.log("Scrivi una funzione per sommare i numeri contenuti in un array");
 
-const arraySum = arrayNumeri.reduce((accumulator,elem) => accumulator+elem,0 );
- console.log(arraySum); //Output 55
+const arraySum = arrayNumeri => arrayNumeri.reduce((accumulator,elem) => accumulator+elem,0 );
+ console.log(arraySum(arrayNumeri)); //Output 55
 
 console.log("-----------------------------------------------------");
 
@@ -101,9 +102,9 @@ console.log("Scrivi una funzione che, dato un array di soli numeri e un numero n
 
 n=10
 
-const arrayPiuN = arrayNumeri.map(num => num + n)
+const arrayPiuN = (array, n) => array.map(num => num + n)
 
-console.log(arrayPiuN)
+console.log(arrayPiuN(arrayNumeri, n)); // Output: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 console.log("------------------------------------------------------");
 
@@ -116,9 +117,9 @@ console.log("Scrivi una funzione che, dato un array di stringhe, ritorni un nuov
 
 ArrayStr =  ["EPICODE", "is", "great"];
 
-const arrayLen = ArrayStr.map(st => st.length);
+const arrayLen = arr => arr.map(st => st.length);
 
-console.log(arrayLen);
+console.log(arrayLen(ArrayStr));
 
 
 console.log("-------------------------------------------------------");
@@ -266,12 +267,17 @@ const movies = [
 
 console.log("Scrivi una funzione per trovare il film più vecchio nell'array fornito.");
 
-let OldestMovie = movies[0];
-movies.forEach(movie => {
-  if (parseInt(movie.Year) < parseInt(OldestMovie.Year)) {
-    OldestMovie = movie;
-  }
-});
+function findOldestMovie(movies) {
+  let OldestMovie = movies[0];
+  movies.forEach(movie => {
+    if (parseInt(movie.Year) < parseInt(OldestMovie.Year)) {
+      OldestMovie = movie;
+    }
+  });
+  return OldestMovie;
+}
+
+const OldestMovie = findOldestMovie(movies);
 
 console.log(OldestMovie);
 
@@ -283,9 +289,9 @@ console.log("-------------------------------------------------------");
 
 console.log("Scrivi una funzione per ottenere il numero di film contenuti nell'array fornito.");
 
-arrayNumFilm = movies.reduce((accumulator) => accumulator + 1, 0);
+arrayNumFilm = () => movies.reduce((count) => count + 1, 0);
 
-console.log(arrayNumFilm); // Output: 14
+console.log(arrayNumFilm()); // Output: 14
 
 console.log("--------------------------------------------------------");
 
@@ -295,9 +301,9 @@ console.log("--------------------------------------------------------");
 */
 console.log("Scrivi una funzione per creare un array con solamente i titoli dei film contenuti nell'array fornito.");
 
-const movieTitles = movies.map(movies => movies.Title);
+const movieTitles = movies => movies.map(movies => movies.Title);
 
-console.log(movieTitles);
+console.log(movieTitles(movies)); // Output: Un array con i titoli dei film
 
 console.log("---------------------------------------------------------");
 
@@ -306,9 +312,9 @@ console.log("---------------------------------------------------------");
 */
 
 console.log("Scrivi una funzione per ottenere dall'array fornito solamente i film usciti nel millennio corrente.");
-movieRecent = movies.filter(movie => parseInt(movie.Year) > 2000);
+movieRecent = movies => movies.filter(movie => parseInt(movie.Year) > 2000);
 
-console.log(movieRecent);
+console.log(movieRecent(movies));
 
 console.log("---------------------------------------------------------");
 
@@ -319,9 +325,9 @@ console.log("---------------------------------------------------------");
 
 console.log("Scrivi una funzione per calcolare la somma di tutti gli anni in cui sono stati prodotti i film contenuti nell'array fornito.");
 
-movieYearSum = movies.reduce((accumulator, movie) => accumulator + parseInt(movie.Year), 0);
+movieYearSum = movies => movies.reduce((accumulator, movie) => accumulator + parseInt(movie.Year), 0);
 
-console.log(movieYearSum); // Output: La somma degli anni dei film
+console.log(movieYearSum(movies)); // Output: La somma degli anni dei film
 
 console.log("---------------------------------------------------------");
 

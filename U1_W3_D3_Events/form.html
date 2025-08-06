@@ -18,8 +18,8 @@
                 display: block;
             }
 
-            input [type="text"],
-            input[type="email"],{
+            input[type="text"],
+            input[type="email"] {
                 display: block;
                 margin-bottom: 10px;
                 padding: 8px;
@@ -61,9 +61,43 @@
         <script>
             const form = document.querySelector('form');
 
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-                console.log('Form submitted');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                console.log('Form submitted'); 
+
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+
+                const inputData = {
+                    name: name,
+                    email: email
+                };
+
+                console.log('Input Data:', inputData);
+
+                let contentArea = document.getElementById('contentArea');
+                if (!contentArea) {
+                    contentArea = document.createElement('div');
+                    contentArea.id = 'contentArea';
+                    document.body.appendChild(contentArea);
+                }
+
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const h3 = document.createElement('h3');
+                h3.textContent = inputData.name + ' - ' + inputData.email;
+
+                card.appendChild(h3);
+                contentArea.appendChild(card);
+
+                card.addEventListener('mouseover', () => {
+                    card.style.border = '2px solid red';
+                });
+
+                card.addEventListener('mouseout', () => {
+                    card.style.border = '';
+                });
             });
         </script>
     </body>

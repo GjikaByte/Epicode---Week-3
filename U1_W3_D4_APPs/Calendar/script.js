@@ -14,144 +14,168 @@
 // La cella del giorno contenente il meeting deve essere evidenziata
 
 
-// Funzione che restituisce il numero di giorni del mese corrente
-const daysInThisMonth = function () {
-    const now = new Date();
+// script.js
 
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+// Storage for meetings: array of arrays (one per day)
+const appointments = [];
 
-    // Ottiene l'ultimo giorno del mese corrente
-    const lastDateOfThisMonth = new Date(currentYear, currentMonth + 1, 0);
-    const lastDayOfThisMonth = lastDateOfThisMonth.getDate();
+// Elements
+const calendarEl = () => document.getElementById('calendar');
+const monthTitleEl = () => document.getElementById('monthTitle');
+const dayNumberSpan = () => document.getElementById('dayNumberSpan');
+const appointmentsList = () => document.getElementById('appointmentsList');
 
-    return lastDayOfThisMonth;
+// Helpers
+const monthNames = [
+  'Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno',
+  'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'
+];
+
+function daysInThisMonth(date = new Date()){
+  const y = date.getFullYear();
+  const m = date.getMonth();
+  return new Date(y, m + 1, 0).getDate();
 }
 
-console.log(daysInThisMonth());
+function firstWeekdayIndex(date = new Date()){
+  // Return 0..6 where 0 = Monday, to align with grid headings
+  const first = new Date(date.getFullYear(), date.getMonth(), 1);
+  const jsDay = first.getDay(); // 0=Sun..6=Sat
+  return (jsDay + 6) % 7;
+}
 
-// Funzione che genera le celle dei giorni nel calendario
-const createDays = function (daysToGenerate) {
-    const calendar = document.getElementById('calendar');
-    const now = new Date();
+function printMonth(){
+  const now = new Date();
+  monthTitleEl().textContent = monthNames[now.getMonth()];
+}
 
-    for (let i = 1; i <= daysToGenerate; i++) {
+// Create the grid of days
+function createDays(){
+  const grid = calendarEl();
+  grid.innerHTML = '';
 
-        appointments.push([]);
+  const now = new Date();
+  const total = daysInThisMonth(now);
+  const offset = firstWeekdayIndex(now);
 
-        const dayCell = document.createElement('div');
-        dayCell.className = 'day';
+  // Fill offset cells (previous-month blanks)
+  for(let b=0; b<offset; b++){
+    const blank = document.createElement('div');
+    blank.className = 'day';
+    blank.style.visibility = 'hidden';
+    grid.appendChild(blank);
+  }
 
-        const dayH3 = document.createElement('h3');
-        dayH3.innerText = i; // Imposta il numero del giorno
+  for(let i = 1; i <= total; i++){
+    appointments.push([]); // init storage
 
-        const today = now.getDate();
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.dataset.day = String(i);
 
-        // Evidenzia il giorno corrente
-        if (today === i+1) {
-            dayH3.classList.add('color-epic');
-        }
+    const h3 = document.createElement('h3');
+    h3.textContent = i;
 
-        dayCell.addEventListener('click', function (e) {
-            e.currentTarget.classList.add('selected');
-            // Rimuove la classe 'selected' da tutte le altre celle
-            const otherCells = document.querySelectorAll('.day');
-            otherCells.forEach(cell => {
-                if (cell !== e.currentTarget) {
-                    cell.classList.remove('selected');
-                }
-            });
-        });
-
-
-        dayCell.appendChild(dayH3);
-        calendar.appendChild(dayCell);
+    // highlight today
+    if(i === now.getDate()){
+      h3.classList.add('color-epic');
     }
+
+    // click handler
+    cell.addEventListener('click', () => {
+      // unique selection
+      document.querySelectorAll('.day.selected').forEach(d => d.classList.remove('selected'));
+      cell.classList.add('selected');
+
+      // update selected day label
+      dayNumberSpan().textContent = i;
+
+      // show today's appointments
+      showAppointments(i - 1);
+    });
+
+    cell.appendChild(h3);
+    grid.appendChild(cell);
+  }
 }
 
-const showAppointments = function (index) {
-    const appointmentsList = document.getElementById('appointmentsList');
-    const ul = document.getElementById('appointmentsList');
-    ul.innerHTML = ''; // Pulisce la lista esistente
+// Show appointment list for a given day index
+function showAppointments(index){
+  const ul = appointmentsList();
+  ul.innerHTML = '';
 
-    const dayAppointments = appointments[index];
-    if (dayAppointments && dayAppointments.length > 0) {
-        dayAppointments.forEach(appointment => {
-            const li = document.createElement('li');
-            li.innerText = appointment;
-            appointmentsList.appendChild(li);
-        });
-    } else {
-        const li = document.createElement('li');
-        li.innerText = 'Nessun appuntamento per questo giorno.';
-        appointmentsList.appendChild(li);
-    }
+  const items = appointments[index] || [];
+  if(items.length === 0){
+    const li = document.createElement('li');
+    li.textContent = 'Nessun appuntamento per questo giorno.';
+    ul.appendChild(li);
+    return;
+  }
+
+  items.forEach(txt => {
+    const li = document.createElement('li');
+    li.textContent = txt;
+    ul.appendChild(li);
+  });
 }
 
-const applyDot = function (e) {
-    const selectedCell = document.querySelector('.day.selected');
+// Apply a dot to the selected cell (only one dot)
+function applyDot(){
+  const selected = document.querySelector('.day.selected');
+  if(!selected) return;
+
+  // remove older dot if any
+  const existing = selected.querySelector('.dot');
+  if(!existing){
     const dot = document.createElement('span');
     dot.className = 'dot';
-
-    selectedCell.appendChild(dot);
+    selected.appendChild(dot);
+  }
 }
 
+function saveMeeting(){
+  const timeInput = document.getElementById('newMeetingTime');
+  const nameInput = document.getElementById('newMeetingName');
 
-const saveMeeting = function (e) {
+  const selectedText = dayNumberSpan().textContent;
+  if(selectedText === 'Click on a Day'){
+    alert('Seleziona un giorno per aggiungere un meeting.');
+    return;
+  }
 
-    const meetingTime = document.getElementById('newMeetingTime'),
-    const meetingName = document.getElementById('newMeetingName');
+  const dayIndex = parseInt(selectedText, 10) - 1;
+  const meetingText = `${timeInput.value} - ${nameInput.value}`.trim();
 
-    const meetingText = meetingTime.value + ' - ' + meetingName.value;
+  if(!timeInput.value || !nameInput.value) return;
 
-    if (dayNumberSpan.innerText !== "Click on a Day") {
-        const dayIndex = parseInt(dayNumberSpan.innerText) - 1; // Converti il testo in numero e sottrai 1 per l'indice dell'array
-        appointments[dayIndex].push(meetingText); // Aggiungi il meeting all'
+  appointments[dayIndex].push(meetingText);
 
-        meetingTime.value = ''; // Pulisce il campo di input dell'orario
-        meetingName.value = ''; // Pulisce il campo di input del nome del meeting
-        
-        // Applica il punto solo se è il primo appuntamento del giorno
-        if (appointments[dayIndex].length === 1) {
-            applyDot(); // Applica il punto alla cella selezionata
-        }
-        console.log(appointments);
-        showAppointments(dayIndex); // Mostra gli appuntamenti per il giorno selezionato
-    else
-        alert("Seleziona un giorno per aggiungere un meeting.");
-    }
+  // Visual feedback
+  applyDot();
+  showAppointments(dayIndex);
+
+  // reset form
+  timeInput.value = '';
+  nameInput.value = '';
 }
 
-// Funzione che stampa il nome del mese corrente
-const printMonth = function () {
-    const months = [
-        'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
-        'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
-    ];
+// Entry point
+window.addEventListener('DOMContentLoaded', () => {
+  printMonth();
+  createDays();
 
-    const now = new Date();
-    const monthIndex = now.getMonth(); // numero da 0-11
-    const monthName = months[monthIndex];
+  // form submit
+  const form = document.getElementById('appointment-form');
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveMeeting();
+  });
 
-    console.log(`Mese corrente: ${monthName}`); 
-}
-
-printMonth();
-
-//Punto di ingresso dell'applicazione
-window.addEventListener("DOMContentLoaded", function() {
-    // Entry point for your application logic
-    // Example: display the number of days in the current month
-
-    createDays(daysInThisMonth());
-    printMonth();
-
-    const form = this.document.getElementById('appointment-form');
-
-    form.onsubmit = function (e) {
-        e.preventDefault(); // Previene il comportamento di submit del form
-        saveMeeting(e);
-    };
-
-    console.log("App loaded. Days in this month:", daysInThisMonth());
+  // optional: select today by default
+  const todayCell = [...document.querySelectorAll('.day')].find(
+    d => d.style.visibility !== 'hidden' && Number(d.dataset.day) === new Date().getDate()
+  );
+  if(todayCell){
+    todayCell.click();
+  }
 });

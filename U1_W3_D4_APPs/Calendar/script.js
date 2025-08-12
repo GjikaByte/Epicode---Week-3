@@ -31,10 +31,13 @@ const monthNames = [
   'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'
 ];
 
-function daysInThisMonth(date = new Date()){
-  const y = date.getFullYear();
-  const m = date.getMonth();
-  return new Date(y, m + 1, 0).getDate();
+function daysInThisMonth(date = new Date()) {
+    const y = date.getFullYear();
+    const m = date.getMonth();
+    // Date(year, monthIndex, dayOfMonth, hours?, minutes?, seconds?, ms?)
+    // The 3rd parameter is the day of the month. Passing 0 means "the day before the 1st",
+    // i.e., the last day of the previous month. So m+1,0 yields the last day of month m.
+    return new Date(y, m + 1, 0).getDate();
 }
 
 function firstWeekdayIndex(date = new Date()){
